@@ -9,7 +9,9 @@
 このファイルの引数・変数に合わせて作り直しましょう。
 演習途中でも実行できます（最初は移動キーを押しても動きません）。
 """
-
+import json
+from pathlib import Path
+SCORE_FILE = Path(__file__).with_name("best_scores.json")
 # 画面の左上が (0, 0)。右へ行くと x が増え、下へ行くと y が増える。
 # WASD の差分：w=(0,-1), s=(0,1), a=(-1,0), d=(1,0)
 KEY_TO_VECTOR = {"w": (0, -1), "s": (0, 1), "a": (-1, 0), "d": (1, 0)}
@@ -200,12 +202,14 @@ def completed(board):
 
 def start():
     """キー入力・ステージ進行を管理する。戻り値：なし。"""
+    scores = load_scores()
     index = select_stage()
     board = new_board(MAP_TEXT[index])
     while True:
         print_board(board)
         if completed(board):
             print("ステージクリア！")
+            update_best_score(scores, index, board["steps"])
             index += 1
             if index == len(MAP_TEXT):
                 print("全ステージクリア！")
@@ -241,6 +245,30 @@ def select_stage():
                 return number - 1
 
         print("正しいステージ番号を入力してください。")
+
+
+def load_scores():
+    if SCORE_FILE.exists():
+        with open(SCORE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def save_scores(scores):
+    with open(SCORE_FILE, "w", encoding="utf-8") as f:
+        json.dump(scores, f, indent=4)
+
+
+def update_best_score(scores, index, steps):
+    stage = str(index + 1)
+
+    if stage not in scores or steps < scores[stage]:
+        scores[stage] = steps
+        save_scores(scores)
+        print("ベストスコア更新！")
+
+    print(f"ベストスコア: {scores[stage]} 手")
+
 
 if __name__ == "__main__":
     start()
