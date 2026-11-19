@@ -55,7 +55,8 @@ def new_board(level_text):
         "crates": set(),  # 箱の座標集合
         "hero": None,     # プレイヤーの座標
         "steps": 0,
-        "past": [],       # 一手戻すための履歴
+        "pushes": 0,
+        "past": [],      # 一手戻すための履歴
     }
     for y, row in enumerate(rows):
         for x, ch in enumerate(row):
@@ -95,7 +96,8 @@ def print_board(board):
             else:
                 output += " "
         print(output)
-    print(f"移動回数: {board['steps']} | WASD 移動 / U 戻す / R 再開 / Q 終了")
+    print(f"移動回数: {board['steps']} | 箱押し回数: {board['pushes']}")
+    print("WASD 移動 / U 戻す / R 再開 / Q 終了")
 
 
 def in_field(board, point):
@@ -139,6 +141,7 @@ def push_crate(board, crate_position, vector):
 
     board["crates"].remove(crate_position)
     board["crates"].add(box_next)
+    board["pushes"] += 1
     return True
     # TODO 3: 箱の行き先を調べ、移動可能なら crates を更新する
     return False
@@ -169,13 +172,14 @@ def apply_move(board, direction_key):
 
     # TODO 2：TODO 1の判定に can_enter() を組み込む。
     old_crates = board["crates"].copy()
+    old_pushes = board["pushes"]
     # TODO 3：次の位置が crates に含まれたら push_crate() を呼ぶ。
     if next_pos in board["crates"]:
         if not push_crate(board, next_pos, vector):
             return False
     #           箱が動かなければプレイヤーも移動してはいけない。
     # ヒント：移動が成功するときだけ次を実行する。
-    board["past"].append((current, old_crates))
+    board["past"].append((current, old_crates, old_pushes))
     board["hero"] = next_pos
     board["steps"] += 1
 
@@ -185,7 +189,7 @@ def apply_move(board, direction_key):
 def step_back(board):
     """Undoを実行。引数：board。戻り値：なし。"""
     if board["past"]:
-        board["hero"], board["crates"] = board["past"].pop()
+        board["hero"], board["crates"], board["pushes"] = board["past"].pop()
         board["steps"] -= 1
 
 
