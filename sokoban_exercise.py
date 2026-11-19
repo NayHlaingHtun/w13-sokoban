@@ -196,7 +196,7 @@ def completed(board):
 
 def start():
     """キー入力・ステージ進行を管理する。戻り値：なし。"""
-    index = 0
+    index = select_stage()
     board = new_board(MAP_TEXT[index])
     while True:
         print_board(board)
@@ -219,6 +219,24 @@ def start():
         else:
             apply_move(board, key)
 
+
+
+def select_stage():
+    print("ステージを選択してください")
+
+    for i in range(len(MAP_TEXT)):
+        print(f"{i + 1}. Stage {i + 1}")
+
+    while True:
+        choice = input("番号：").strip()
+
+        if choice.isdigit():
+            number = int(choice)
+
+            if 1 <= number <= len(MAP_TEXT):
+                return number - 1
+
+        print("正しいステージ番号を入力してください。")
 
 if __name__ == "__main__":
     start()
